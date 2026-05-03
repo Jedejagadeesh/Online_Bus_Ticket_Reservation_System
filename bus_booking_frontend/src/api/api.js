@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://onlinebusticketreservationsystem-production.up.railway.app/api/",
+  baseURL: "https://onlinebusticketreservationsystem-production.up.railway.app/api"
 });
 
 // ================= BUSES =================
