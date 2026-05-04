@@ -31,7 +31,7 @@ const selectedDate = localStorage.getItem("journey_date");
     <div className="seat_main">
       <h2>Select Seats</h2>
 
-      <div className="seatGrid">
+      <div className="seatGrid" >
         {[...Array(20)].map((_, i) => {
           const seat = i + 1;   // ✅ seat defined HERE
 

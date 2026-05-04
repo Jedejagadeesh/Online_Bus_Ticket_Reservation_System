@@ -9,25 +9,45 @@ export function AuthProvider({ children }) {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
 
+  const BASE_URL = "https://online-bus-booking-system-backend-2m8m.onrender.com/api";
+
   // ================= LOGIN FUNCTION =================
   const login = async (email, password) => {
     try {
       const res = await axios.post(
-        "https://onlinebusticketreservationsystem-production.up.railway.app/api/login/",
+        `${BASE_URL}/login/`,
         {
           email,
           password,
         }
       );
 
-      // store user/token if backend sends it
-      setUser(res.data.user || res.data);
-
-      localStorage.setItem("user", JSON.stringify(res.data));
+      // ✅ store only user data
+      setUser(res.data.user);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
 
       return res.data;
     } catch (error) {
       console.log("LOGIN ERROR:", error.response?.data || error.message);
+      throw error;
+    }
+  };
+
+  // ================= REGISTER FUNCTION =================
+  const register = async (name, email, password) => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/register/`,
+        {
+          name,
+          email,
+          password,
+        }
+      );
+
+      return res.data;
+    } catch (error) {
+      console.log("REGISTER ERROR:", error.response?.data || error.message);
       throw error;
     }
   };
@@ -42,7 +62,8 @@ export function AuthProvider({ children }) {
       value={{
         user,
         setUser,
-        login,              // ✅ FIX ADDED HERE
+        login,
+        register,
         showLogin,
         showSignup,
         setShowLogin,
@@ -55,6 +76,7 @@ export function AuthProvider({ children }) {
   );
 }
 
+// ================= CUSTOM HOOK =================
 export function useAuth() {
   return useContext(AuthContext);
 }

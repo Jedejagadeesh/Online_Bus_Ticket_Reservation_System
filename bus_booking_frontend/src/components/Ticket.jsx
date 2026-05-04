@@ -46,11 +46,11 @@ export default function Ticket({ data }) {
         </div>
 
         <div className="ticket-row">
-          <span>💺 Seats:</span>
+          <span>💺 Your_Seat_No:</span>
           <strong>{data.seats}</strong>
         </div>
 
-        <div className="ticket-footer">
+        <div className="ticket-footer"style={{fontSize:"20px"}}>
           🚍 Have a Safe Journey
         </div>
 

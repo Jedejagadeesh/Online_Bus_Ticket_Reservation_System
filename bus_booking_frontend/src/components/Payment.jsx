@@ -1,25 +1,37 @@
 import { useState } from "react";
 import api from "../api/api";
 import { useAuth } from "../context/AuthProvider";
+import { useLocation } from "react-router-dom";
 
-export default function Payment({ bus, date, onSuccess }) {
-  const { user } = useAuth(); // 🔥 GET LOGGED USER
+export default function Payment({ bus, onSuccess }) {
+  const { user } = useAuth();
+  const location = useLocation();
 
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
-  const selectedSeats = JSON.parse(localStorage.getItem("seats")) || [];
-  const totalPrice = selectedSeats.length * bus.price;
+  // ✅ PRIORITY: navigation state
+  const seats =
+    location.state?.seats ||
+    JSON.parse(localStorage.getItem("seats")) ||
+    [];
 
-  // 🔥 FINAL PAYMENT + BOOKING API CALL
+  const busId = location.state?.busId || bus?.id;
+
+  const date =
+    location.state?.date ||
+    new Date().toISOString().split("T")[0];
+
+  const totalPrice = seats.length * (bus?.price || 0);
+
   const handlePayment = async () => {
     if (!name || !email) {
       alert("Enter name & email");
       return;
     }
 
-    if (selectedSeats.length === 0) {
+    if (seats.length === 0) {
       alert("No seats selected");
       return;
     }
@@ -27,46 +39,36 @@ export default function Payment({ bus, date, onSuccess }) {
     try {
       setLoading(true);
 
-      // 🔥 SEND TO DJANGO BACKEND
       const res = await api.post("/book/", {
-        bus: bus.id,
-        seats: selectedSeats.join(","),   // IMPORTANT FIX
+        bus: busId,
+        seats: seats.join(","),
         journey_date: date,
-        user_id: user?.id   // 🔥 from login user
+        user_id: user?.id,
+        name,
+        email
       });
 
-      console.log(res.data);
-
-      // 🎫 CREATE TICKET
       const ticketData = {
         ticketNo: "TKT" + Date.now(),
         user: { name, email },
         bus,
-        seats: selectedSeats.join(","),
+        seats: seats.join(","),
         total: totalPrice,
-        date: date,
+        date,
         status: "Booked"
       };
 
-      // 💾 SAVE LOCAL BOOKING HISTORY
-      const oldBookings =
-        JSON.parse(localStorage.getItem("bookings")) || [];
+      const old = JSON.parse(localStorage.getItem("bookings")) || [];
+      localStorage.setItem("bookings", JSON.stringify([...old, ticketData]));
 
-      localStorage.setItem(
-        "bookings",
-        JSON.stringify([...oldBookings, ticketData])
-      );
-
-      // 🧹 CLEANUP
       localStorage.removeItem("seats");
 
       alert("Booking successful ✅");
 
-      // 🚀 MOVE TO TICKET PAGE
       onSuccess(ticketData);
 
-    } catch (error) {
-      console.log(error.response?.data || error.message);
+    } catch (err) {
+      console.log(err.response?.data || err.message);
       alert("Booking failed ❌");
     }
 
@@ -91,7 +93,7 @@ export default function Payment({ bus, date, onSuccess }) {
       />
 
       <p>📅 Date: {date}</p>
-      <p>💺 Seats: {selectedSeats.join(", ")}</p>
+      <p>💺 Seats: {seats.join(", ")}</p>
       <p>💰 Total: ₹{totalPrice}</p>
 
       <button onClick={handlePayment}>

@@ -9,17 +9,33 @@ export default function Seats() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    getBookedSeats(id).then((res) => setBooked(res.booked_seats));
-  }, []);
+    getBookedSeats(id).then((res) =>
+      setBooked(res.data.booked_seats.map(String))
+    );
+  }, [id]);
 
   const toggleSeat = (seat) => {
-    if (booked.includes(seat)) return;
+    const s = String(seat);
+
+    if (booked.includes(s)) return;
 
     setSelected((prev) =>
-      prev.includes(seat)
-        ? prev.filter((s) => s !== seat)
-        : [...prev, seat]
+      prev.includes(s)
+        ? prev.filter((x) => x !== s)
+        : [...prev, s]
     );
+  };
+
+  const handleProceed = () => {
+    localStorage.setItem("seats", JSON.stringify(selected));
+
+    navigate("/payment", {
+      state: {
+        busId: id,
+        seats: selected,
+        date: new Date().toISOString().split("T")[0]
+      }
+    });
   };
 
   return (
@@ -28,11 +44,11 @@ export default function Seats() {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 60px)" }}>
         {[...Array(20)].map((_, i) => {
-          const seat = i + 1;
+          const seat = String(i + 1);
 
           return (
             <div
-              key={i}
+              key={seat}
               onClick={() => toggleSeat(seat)}
               style={{
                 margin: 5,
@@ -51,9 +67,7 @@ export default function Seats() {
         })}
       </div>
 
-      <button onClick={() =>
-        navigate("/payment", { state: { busId: id, seats: selected } })
-      }>
+      <button onClick={handleProceed}>
         Proceed to Payment
       </button>
     </div>
