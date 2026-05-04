@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://online-bus-booking-system-backend-2m8m.onrender.com/api"
+  baseURL: "https://online-bus-booking-system-backend-2m8m.onrender.com"
 });
 
 // ================= BUSES =================
